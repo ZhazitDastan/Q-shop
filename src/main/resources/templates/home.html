@@ -7,8 +7,22 @@
   <title>Home</title>
 </head>
 <body>
-<h1>Welcome to the Home Page</h1>
-<p>This is the home page of your online shopping site.</p>
-<p>Click <a th:href="@{/products}">here</a> to go to the Products page.</p>
+<h1>Welcome to Home Page</h1>
+
+<form th:action="@{/home}" method="get">
+  <label>Search: <input type="text" name="title" /></label>
+  <button type="submit">Search</button>
+</form>
+
+<div th:each="product : ${products}">
+  <p th:text="${product.title}"></p>
+  <p th:text="${product.description}"></p>
+  <p th:text="${product.price}"></p>
+  <a th:href="@{'/product-details/' + ${product.id}}">Details</a>
+
+</div>
+
+<a th:href="@{/add}">Add New Product</a>
+
 </body>
 </html>

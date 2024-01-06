@@ -8,17 +8,29 @@
 </head>
 <body>
 <h1>Add Product</h1>
-<form th:action="@{/add}" th:object="${product}" method="post">
+
+<form th:action="@{/add}" th:object="${product}" method="post" enctype="multipart/form-data">
+
+
   <label>Title: <input type="text" th:field="*{title}" /></label><br/>
   <label>Description: <input type="text" th:field="*{description}" /></label><br/>
   <label>Price: <input type="number" step="0.01" th:field="*{price}" /></label><br/>
   <label>City: <input type="text" th:field="*{city}" /></label><br/>
   <label>Author: <input type="text" th:field="*{author}" /></label><br/>
+
+  <!-- Image upload fields -->
+  <label>Image 1: <input type="file" name="file1" /></label><br/>
+  <label>Image 2: <input type="file" name="file2" /></label><br/>
+  <label>Image 3: <input type="file" name="file3" /></label><br/>
+
   <button type="submit">Save</button>
 </form>
+
+
 <br/>
-<a href="/products">Back to Product List</a>
+<a th:href="@{/home}">Back to Home</a>
 <br/>
-<a href="/home">Home</a>
+
+
 </body>
 </html>

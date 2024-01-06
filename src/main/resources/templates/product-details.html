@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details</title>
+</head>
+<body>
+<h1>Product Details</h1>
+
+<p th:text="'Title: ' + ${product.title}"></p>
+<p th:text="'Description: ' + ${product.description}"></p>
+<p th:text="'Price: ' + ${product.price}"></p>
+<p th:text="'City: ' + ${product.city}"></p>
+<p th:text="'Author: ' + ${product.author}"></p>
+
+<!-- Display images -->
+<div th:each="image : ${product.images}">
+  <img th:src="@{'/image/' + ${image.id}}" th:alt="${image.name}" width="100"/>
+</div>
+
+<a th:href="@{'/edit/' + ${product.id}}">Edit</a>
+
+<a th:href="@{'/delete/' + ${product.id}}">Delete</a>
+
+<br/>
+<a th:href="@{/home}">Back to Home</a>
+
+</body>
+</html>

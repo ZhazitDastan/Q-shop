@@ -8,18 +8,34 @@
 </head>
 <body>
 <h1>Edit Product</h1>
-<form th:action="@{/edit/{id}(id=${product.id})}" th:object="${product}" method="post">
-  <input type="hidden" th:field="*{id}" />
+
+<form th:action="@{'/edit/' + ${product.id}}" th:object="${product}" method="post" enctype="multipart/form-data">
+
+
+  <input type="hidden" th:field="*{id}"/>
+
   <label>Title: <input type="text" th:field="*{title}" /></label><br/>
   <label>Description: <input type="text" th:field="*{description}" /></label><br/>
   <label>Price: <input type="number" step="0.01" th:field="*{price}" /></label><br/>
   <label>City: <input type="text" th:field="*{city}" /></label><br/>
   <label>Author: <input type="text" th:field="*{author}" /></label><br/>
+
+
+  <label>Image 1: <input type="file" name="file1" /></label><br/>
+  <label>Image 2: <input type="file" name="file2" /></label><br/>
+  <label>Image 3: <input type="file" name="file3" /></label><br/>
+
   <button type="submit">Save Changes</button>
+
+  <div th:if="${error}" class="alert alert-danger">
+    <p th:text="${error}"></p>
+  </div>
+
 </form>
+
 <br/>
-<a href="/products">Back to Product List</a>
-<br/>
-<a href="/home">Home</a>
+<a th:href="@{/home}">Back to Home</a>
+
+
 </body>
 </html>

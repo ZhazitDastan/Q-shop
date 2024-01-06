@@ -4,22 +4,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import shop.models.Image;
 import shop.models.Product;
-import shop.services.ProjectService;
+import shop.services.ProductService;
+
+import java.io.IOException;
 
 @Controller
 public class ShopController {
-    private final ProjectService projectService;
+    private final ProductService productService;
 
     @Autowired
-    public ShopController(ProjectService projectService) {
-        this.projectService = projectService;
+    public ShopController(ProductService productService) {
+        this.productService = productService;
     }
 
     @GetMapping("/products")
     public String listProducts(@RequestParam(name = "title", required = false) String title, Model model) {
-        model.addAttribute("products", projectService.listProducts(title));
-        return "products";
+        model.addAttribute("products", productService.listProducts(title));
+        return "product-details";
     }
 
     @GetMapping("/add")
@@ -29,44 +33,104 @@ public class ShopController {
     }
 
     @PostMapping("/add")
-    public String addProduct(@ModelAttribute Product product) {
-        projectService.saveProduct(product);
-        return "redirect:/products";
+    public String addProduct(@RequestParam("file1") MultipartFile file1,
+                             @RequestParam("file2") MultipartFile file2,
+                             @RequestParam("file3") MultipartFile file3,
+                             @ModelAttribute Product product) {
+        productService.saveProduct(product, file1, file2, file3);
+        return "redirect:/home";
     }
-
     @GetMapping("/delete/{id}")
     public String deleteProduct(@PathVariable Long id) {
-        projectService.deleteProduct(id);
-        return "redirect:/products";
+        productService.deleteProduct(id);
+        return "redirect:/home";
     }
 
     @GetMapping("/edit/{id}")
     public String showEditProductForm(@PathVariable Long id, Model model) {
-        Product product = projectService.getProductById(id);
+        Product product = productService.getProductById(id);
         if (product != null) {
             model.addAttribute("product", product);
             return "edit-product";
         } else {
-            return "redirect:/products";
+            return "redirect:/home";
         }
     }
 
     @PostMapping("/edit/{id}")
-    public String editProduct(@PathVariable Long id, @ModelAttribute Product product) {
-        Product existingProduct = projectService.getProductById(id);
+    public String editProduct(@PathVariable Long id, @ModelAttribute Product updatedProduct,
+                              @RequestParam("file1") MultipartFile file1,
+                              @RequestParam("file2") MultipartFile file2,
+                              @RequestParam("file3") MultipartFile file3, Model model) {
+
+        Product existingProduct = productService.getProductById(id);
+
         if (existingProduct != null) {
-            existingProduct.setTitle(product.getTitle());
-            existingProduct.setDescription(product.getDescription());
-            existingProduct.setPrice(product.getPrice());
-            existingProduct.setCity(product.getCity());
-            existingProduct.setAuthor(product.getAuthor());
-            projectService.saveProduct(existingProduct);
+            try {
+                updateProductFields(existingProduct, updatedProduct);
+                updateImages(existingProduct, file1, file2, file3);
+                productService.saveProduct(existingProduct, file1, file2, file3);
+                return "redirect:/home";
+            } catch (IOException e) {
+                model.addAttribute("error", "Error editing product: " + e.getMessage());
+                return "edit-product";
+            }
+        } else {
+            return "redirect:/home";
         }
-        return "redirect:/products";
     }
 
+    private void updateProductFields(Product existingProduct, Product updatedProduct) {
+        existingProduct.setTitle(updatedProduct.getTitle());
+        existingProduct.setDescription(updatedProduct.getDescription());
+        existingProduct.setPrice(updatedProduct.getPrice());
+        existingProduct.setCity(updatedProduct.getCity());
+        existingProduct.setAuthor(updatedProduct.getAuthor());
+    }
+
+    private void updateImages(Product existingProduct, MultipartFile file1, MultipartFile file2, MultipartFile file3) throws IOException {
+        if (file1.getSize() != 0) {
+            existingProduct.addImageToProduct(toImageEntity(file1, true));
+        }
+
+        if (file2.getSize() != 0) {
+            existingProduct.addImageToProduct(toImageEntity(file2, false));
+        }
+
+        if (file3.getSize() != 0) {
+            existingProduct.addImageToProduct(toImageEntity(file3, false));
+        }
+    }
+
+    private Image toImageEntity(MultipartFile file, boolean isPreviewImage) throws IOException {
+        Image image = new Image();
+        image.setName(file.getName());
+        image.setOriginalFileName(file.getOriginalFilename());
+        image.setContentType(file.getContentType());
+        image.setSize(file.getSize());
+        image.setImageBytes(file.getBytes());
+        image.setIsPreviewImage(isPreviewImage);
+
+        return image;
+    }
+
+    @GetMapping("/product-details/{id}")
+    public String showProductDetails(@PathVariable Long id, Model model) {
+        Product product = productService.getProductById(id);
+        if (product != null) {
+            model.addAttribute("product", product);
+            return "product-details";
+        } else {
+            model.addAttribute("products", productService.listProducts(null));
+            return "home";
+        }
+    }
+
+
+
     @GetMapping("/home")
-    public String showHomePage() {
+    public String showHomePage(Model model) {
+        model.addAttribute("products", productService.listProducts(null));
         return "home";
     }
 }
