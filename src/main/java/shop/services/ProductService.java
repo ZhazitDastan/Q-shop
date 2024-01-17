@@ -39,6 +39,17 @@ public class ProductService {
         }
     }
 
+    public void saveProduct(Product product) {
+        try {
+            log.info("Saving new Product. Title: {};", product.getTitle());
+            productRepository.save(product);
+        } catch (Exception e) {
+            log.error("Error saving product with title: {}", product.getTitle(), e);
+        }
+    }
+
+
+
     private void addImageToProduct(Product product, MultipartFile file, boolean isPreviewImage) throws IOException {
         if (file != null && file.getSize() > 0) {
             Image image = createImageFromMultipartFile(file);

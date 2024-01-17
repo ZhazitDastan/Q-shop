@@ -1,4 +1,4 @@
-package Q-shop;
+package shop;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

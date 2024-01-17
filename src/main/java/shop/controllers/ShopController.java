@@ -5,6 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import shop.models.Image;
 import shop.models.Product;
 import shop.services.ProductService;
@@ -32,14 +33,45 @@ public class ShopController {
         return "add-product";
     }
 
+//    @PostMapping("/add")
+//    public String addProduct(@RequestParam("file1") MultipartFile file1,
+//                             @RequestParam("file2") MultipartFile file2,
+//                             @RequestParam("file3") MultipartFile file3,
+//                             @ModelAttribute Product product) {
+//        productService.saveProduct(product, file1, file2, file3);
+//        return "redirect:/home";
+//    }
+
     @PostMapping("/add")
-    public String addProduct(@RequestParam("file1") MultipartFile file1,
-                             @RequestParam("file2") MultipartFile file2,
-                             @RequestParam("file3") MultipartFile file3,
-                             @ModelAttribute Product product) {
-        productService.saveProduct(product, file1, file2, file3);
+    public String addProduct(@RequestParam(name = "file1", required = false) MultipartFile file1,
+                             @RequestParam(name = "file2", required = false) MultipartFile file2,
+                             @RequestParam(name = "file3", required = false) MultipartFile file3,
+                             @ModelAttribute Product product, RedirectAttributes redirectAttributes) {
+        try {
+            if (filesAreProvided(file1, file2, file3)) {
+                productService.saveProduct(product, file1, file2, file3);
+            } else {
+                productService.saveProduct(product);
+            }
+            redirectAttributes.addFlashAttribute("successMessage", "Product saved successfully.");
+        } catch (Exception e) {
+            System.err.println("Error saving product: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Error saving product.");
+        }
         return "redirect:/home";
     }
+
+
+    private boolean filesAreProvided(MultipartFile... files) {
+        for (MultipartFile file : files) {
+            if (file != null && !file.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     @GetMapping("/delete/{id}")
     public String deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
@@ -79,6 +111,7 @@ public class ShopController {
             return "redirect:/home";
         }
     }
+
 
     private void updateProductFields(Product existingProduct, Product updatedProduct) {
         existingProduct.setTitle(updatedProduct.getTitle());

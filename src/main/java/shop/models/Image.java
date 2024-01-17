@@ -34,6 +34,7 @@ public class Image {
     private Boolean isPreviewImage;
 
     @Lob
+    @Column(length = 10485760)
     private byte[] imageBytes;
 
     @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)
